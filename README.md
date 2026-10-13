@@ -53,7 +53,48 @@ Two rules learned the hard way here:
   Keep `SKILL.md` under ~200 lines and push reference material to
   `references/`. A skill is not documentation.
 
-## Activation in opencode
+## Installing into a harness
+
+This repo is the source of truth. Each harness reads skills from a different
+directory, so "install" means "make the harness look at this folder". opencode
+pointed at the repo reads new skills automatically; the others need one symlink
+per skill.
+
+| Harness | Skills directory it reads | What to do |
+| --- | --- | --- |
+| **opencode** | the `skills` array in `~/.config/opencode/opencode.json` | nothing — already points here |
+| **Claude Code** | `~/.claude/skills/` | symlink each skill in |
+| **Antigravity** (`agy`) | `~/.gemini/config/skills/` | symlink each skill in |
+
+Use a **symlink, not a copy**, so `git pull` and edits here show up in every
+harness with no re-install. Run this once per new skill (`<id>` = the folder
+name, e.g. `asd-ste100`):
+
+```sh
+id=asd-ste100   # the skill folder name
+for dir in ~/.claude/skills ~/.gemini/config/skills; do
+  mkdir -p "$dir"
+  ln -sfn "$HOME/Projects/agent-skills/skills/$id" "$dir/$id"
+done
+```
+
+Verify the links resolve to a real `SKILL.md`:
+
+```sh
+for dir in ~/.claude/skills ~/.gemini/config/skills; do
+  for id in asd-ste100 ears-requirements; do
+    test -f "$dir/$id/SKILL.md" && echo "OK  $dir/$id" || echo "MISSING $dir/$id"
+  done
+done
+```
+
+Then start a **new** session in that harness — skills are discovered at startup,
+not mid-session.
+
+To remove a skill from a harness: `rm ~/.claude/skills/<id>` (deletes only the
+link; the repo copy stays).
+
+### opencode
 
 The repo is wired in as a skills source. In `~/.config/opencode/opencode.json`:
 
@@ -68,3 +109,20 @@ the highest precedence, so a skill here overrides one of the same ID in
 `~/.config/opencode/skills` or in a project's `.claude/skills` / `.agents/skills`.
 
 To try a skill without installing it, load it by ID: `/skill explore`.
+
+### Fallback: copy instead of symlink
+
+If a harness ignores symlinks, replace `ln -sfn` with a copy. You must re-run it
+after every change here:
+
+```sh
+id=asd-ste100
+cp -R "$HOME/Projects/agent-skills/skills/$id" ~/.claude/skills/
+```
+
+### Note: the `npx skills` hub
+
+Skills installed with the `skills` CLI land in `~/.agents/skills/` and are
+symlinked from there into each harness dir (see `~/.agents/.skill-lock.json`).
+The `set -e` loop above links straight to this repo instead. Do not point both
+mechanisms at the same skill ID — the later link wins and hides the other.
