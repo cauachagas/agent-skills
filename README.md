@@ -27,6 +27,8 @@ name.
 
 | ID | What it does |
 | --- | --- |
+| [`asd-ste100`](skills/asd-ste100/) | Rewrite dense/ambiguous English into ASD-STE100 Simplified Technical English — short sentences, active voice, no hedges guessed away |
+| [`ears-requirements`](skills/ears-requirements/) | Generate testable EARS (Easy Approach to Requirements Syntax) requirements from plans, docs, or code |
 | [`explore`](skills/explore/) | Token-efficient filesystem exploration: `eza`, `fd`, `rg`, `ast-grep`, `bat`, `jq`, `yq`, `delta`, `tokei`, `fzf` |
 
 ## Adding a skill
